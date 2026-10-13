@@ -26,3 +26,14 @@ Schwab does not provide XRPZ's NAV, so you pass it in with `--nav`.
 ```bash
 python3 kgfo_positions.py --nav 15.03 --xrp-per-share 10.85
 ```
+
+## XRP spot price
+
+`xrp_spot.py` fetches XRP/USD from Coinbase (falling back to Kraken). No API key is needed, and it uses only the standard library.
+
+```bash
+python3 xrp_spot.py                                   # spot price + implied XRPZ NAV
+python3 xrp_spot.py --nav 15.03 --xrp-per-share 10.85 # also compares your NAV to the implied one
+```
+
+`python3 test_spot.py` checks the fallback logic with fake responses, offline.
