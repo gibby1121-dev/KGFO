@@ -97,7 +97,26 @@ def fetch_prices(tickers: list[str], window: int) -> pd.DataFrame:
     close = raw["Close"] if isinstance(raw.columns, pd.MultiIndex) else raw[["Close"]]
     if isinstance(close, pd.Series):
         close = close.to_frame(tickers[0])
-    close = close.dropna(how="all").ffill()
+    close = _drop_incomplete_trailing_rows(close.dropna(how="all")).ffill()
+    return close
+
+
+def _drop_incomplete_trailing_rows(close: pd.DataFrame) -> pd.DataFrame:
+    """Drop trailing rows where a ticker that traded the prior day has no close.
+
+    Yahoo can return a placeholder bar for the current session before every
+    ETF has a close. Forward-filling it would stamp the report with a date that
+    has no real data and show a 0% 1D return for the missing tickers.
+    Tickers with no data at all (never listed/failed download) do not count.
+    """
+    while len(close) > 1:
+        last, prev = close.iloc[-1], close.iloc[-2]
+        stale = last.isna() & prev.notna()
+        if not stale.any():
+            break
+        print(f"Note: dropped incomplete row {close.index[-1].date()} "
+              f"(no close for: {', '.join(stale[stale].index)})", file=sys.stderr)
+        close = close.iloc[:-1]
     return close
 
 

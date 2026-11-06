@@ -16,6 +16,7 @@ px = pd.DataFrame(
 )
 px.iloc[-1, cols.index("ARGT")] *= 1.12  # forced breakout
 
+_real_fetch = g.fetch_prices
 g.fetch_prices = lambda tickers, window: px
 
 for fmt in ("markdown", "text"):
@@ -43,3 +44,20 @@ with tempfile.TemporaryDirectory() as d:
         page = open(os.path.join(d, fn), encoding="utf-8").read()
         assert must in page and "COMPOSITE" in page and "<svg" in page
 print("dashboards ok")
+
+# Trailing placeholder row: one ticker missing the newest session must be dropped,
+# not forward-filled into a fake 0% day.
+import types
+cols2 = ["SPY", "EWJ"]
+idx2 = pd.bdate_range(end="2026-11-05", periods=5)
+frame = pd.DataFrame({"SPY": [100, 101, 102, 103, 104.0], "EWJ": [50, 51, 52, 53, np.nan]}, index=idx2)
+raw = pd.concat({"Close": frame}, axis=1)
+g.yf = types.SimpleNamespace(download=lambda *a, **k: raw)
+out = g._drop_incomplete_trailing_rows(frame)
+assert out.index[-1] == idx2[-2] and len(out) == 4
+full = _real_fetch(cols2, 252)
+assert full.index[-1] == idx2[-2] and full["EWJ"].iloc[-1] == 53
+# A never-listed ticker (all NaN) must not trigger dropping.
+frame2 = frame.assign(EWJ=[np.nan] * 5)
+assert len(g._drop_incomplete_trailing_rows(frame2.dropna(how="all"))) == 5
+print("trailing-row ok")
