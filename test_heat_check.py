@@ -33,3 +33,13 @@ with contextlib.redirect_stdout(buf):
     g.main(["--no-commentary"])
 assert "commentary" not in buf.getvalue()
 print("ok")
+
+import os
+import tempfile
+with tempfile.TemporaryDirectory() as d:
+    with contextlib.redirect_stdout(io.StringIO()):
+        g.main(["--dashboard-dir", d])
+    for fn, must in (("g7_dashboard.html", "G7 Markets Heat Check"), ("g20_dashboard.html", "G20 Markets Heat Check")):
+        page = open(os.path.join(d, fn), encoding="utf-8").read()
+        assert must in page and "COMPOSITE" in page and "<svg" in page
+print("dashboards ok")

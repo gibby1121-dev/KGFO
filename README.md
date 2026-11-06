@@ -49,4 +49,5 @@ python3 global_heat_check.py --format text --z 2.5 --no-commentary
 
 - Russia is omitted (no investable ETF). FEZ is listed but excluded from the G20 composite to avoid double counting DE/FR/IT.
 - Returns are USD ETF prices, so they include FX effects. Set `CUSTOM_WEIGHTS` in the script to replace equal weighting.
+- `--dashboard-dir DIR` also writes `g7_dashboard.html` and `g20_dashboard.html` (self-contained, light/dark aware): composite tiles, shaded return grid, Z50 bars, YTD ranking, commentary.
 - `python3 test_heat_check.py` runs the report on synthetic prices, offline.
