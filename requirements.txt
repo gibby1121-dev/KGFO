@@ -1,1 +1,4 @@
 schwab-py
+yfinance
+pandas
+numpy

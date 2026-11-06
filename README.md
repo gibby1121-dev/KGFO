@@ -37,3 +37,16 @@ python3 xrp_spot.py --nav 15.03 --xrp-per-share 10.85 # also compares your NAV t
 ```
 
 `python3 test_spot.py` checks the fallback logic with fake responses, offline.
+
+## Global market heat check
+
+`global_heat_check.py` builds G7 and G20 equity proxies from country ETFs (via `yfinance`): 1D/5D/1M/3M/YTD returns, an equal-weight composite per cluster, and 50-day z-score / 5-day momentum flags (|z| >= 2 by default), plus data-derived commentary.
+
+```bash
+python3 global_heat_check.py                      # markdown tables
+python3 global_heat_check.py --format text --z 2.5 --no-commentary
+```
+
+- Russia is omitted (no investable ETF). FEZ is listed but excluded from the G20 composite to avoid double counting DE/FR/IT.
+- Returns are USD ETF prices, so they include FX effects. Set `CUSTOM_WEIGHTS` in the script to replace equal weighting.
+- `python3 test_heat_check.py` runs the report on synthetic prices, offline.
